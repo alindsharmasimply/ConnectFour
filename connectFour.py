@@ -1,4 +1,6 @@
 import numpy as np
+import pygame
+import sys
 
 ROW_COUNT = 6
 COLUMN_COUNT = 7
@@ -43,6 +45,18 @@ def winning_move(board, piece):
             if board[r][c] == piece and board[r - 1][c + 1] == piece and board[r - 2][c + 2] == piece and board[r - 3][c + 3] == piece:
                 return True
 
+def draw_board(board):
+    
+    # Creating all the squares one by one
+    for c in range(COLUMN_COUNT):
+        for r in range(ROW_COUNT):
+            # To draw the outer blue rectangle
+            # Syntax = " rect(Surface, color, rectangle, width = 0) "
+            pygame.draw.rect(screen, (0, 10, 230), (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            
+            #To draw the inner black circles
+            # Syntax = " circle(Surface, color, pos, radius, width = 0) "
+            pygame.draw.circle(screen, (0, 0, 0), (int(c * SQUARESIZE + SQUARESIZE/2), int(r * SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), RADIUS)
 
 def print_board(board):
     print(np.flip(board, 0))
@@ -52,33 +66,62 @@ print_board(board)
 game_over = False
 turn = 0
 
+pygame.init()
+
+# We assume the circles to be as squares first
+SQUARESIZE = 100
+
+# The width and height of the screen
+width = COLUMN_COUNT * SQUARESIZE
+height = (ROW_COUNT + 1) * SQUARESIZE
+
+RADIUS = int((SQUARESIZE / 2) - 5)
+
+size = (width, height)
+
+# Creation/Initialization of the pygame window screen
+screen = pygame.display.set_mode(size)
+draw_board(board)
+pygame.display.update()
+
 while not game_over:
     
-    #Ask for Player 1's Input
-    if turn == 0:
-        col =  int(input("Player 1 make your selction (0 - 6)"))
-        # 'col' represents the column where the player will drop the coin
+    # 'pygame' is an event-based library
+    for event in pygame.event.get():
         
-        if is_valid_location(board, col):
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, 1)
-            
-            if winning_move(board, 1):
-                print("Player 1 wins !! CONGRATULATIONS")
-                game_over = True
+        # Checking whether the user has tried to close the window
+        if event.type == pygame.QUIT:
+            sys.exit()
         
-    #Ask for Player 2's Input
-    else:
-        col =  int(input("Player 2 make your selction (0 - 6)"))
-        # 'col' represents the column where the player will drop the coin
-        
-        if is_valid_location(board, col):
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, 2)
-            
-            if winning_move(board, 2):
-                print("Player 2 wins !! CONGRATULATIONS")
-                game_over = True
+        # Checking whether the type of event is a click in the pygame window
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            #Ask for Player 1's Input
+            if turn == 0:
+                col =  int(input("Player 1 make your selction (0 - 6)"))
+                # 'col' represents the column where the player will drop the coin
+                
+                if is_valid_location(board, col):
+                    row = get_next_open_row(board, col)
+                    drop_piece(board, row, col, 1)
+                    
+                    if winning_move(board, 1):
+                        print("Player 1 wins !! CONGRATULATIONS")
+                        game_over = True
+                
+            #Ask for Player 2's Input
+            else:
+                col =  int(input("Player 2 make your selction (0 - 6)"))
+                # 'col' represents the column where the player will drop the coin
+                
+                if is_valid_location(board, col):
+                    row = get_next_open_row(board, col)
+                    drop_piece(board, row, col, 2)
+                    
+                    if winning_move(board, 2):
+                        print("Player 2 wins !! CONGRATULATIONS")
+                        game_over = True
+    
+    
     
     print_board(board)
     turn += 1
