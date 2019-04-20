@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
 import sys
+import math
 
 ROW_COUNT = 6
 COLUMN_COUNT = 7
@@ -53,10 +54,22 @@ def draw_board(board):
             # To draw the outer blue rectangle
             # Syntax = " rect(Surface, color, rectangle, width = 0) "
             pygame.draw.rect(screen, (0, 10, 230), (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
-            
+
             #To draw the inner black circles
             # Syntax = " circle(Surface, color, pos, radius, width = 0) "
-            pygame.draw.circle(screen, (0, 0, 0), (int(c * SQUARESIZE + SQUARESIZE/2), int(r * SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), RADIUS)
+            pygame.draw.circle(screen, (0, 0, 0), (int(c * SQUARESIZE + SQUARESIZE/2),int(r * SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), RADIUS)
+    
+    for c in range(COLUMN_COUNT):
+        for r in range(ROW_COUNT):
+            if board[r][c] == 1:
+                # To draw the red coin for player 1
+                pygame.draw.circle(screen, (255, 0, 0), (int(c * SQUARESIZE + SQUARESIZE/2),height - int(r * SQUARESIZE + SQUARESIZE/2)), RADIUS)
+                
+            elif board[r][c] == 2:
+                # To draw the yellow coin for player 2
+                pygame.draw.circle(screen, (255, 255, 0), (int(c * SQUARESIZE + SQUARESIZE/2),height - int(r * SQUARESIZE + SQUARESIZE/2)), RADIUS)
+    
+    pygame.display.update()
 
 def print_board(board):
     print(np.flip(board, 0))
@@ -84,6 +97,8 @@ screen = pygame.display.set_mode(size)
 draw_board(board)
 pygame.display.update()
 
+myfont = pygame.font.SysFont("monospace", 75)
+
 while not game_over:
     
     # 'pygame' is an event-based library
@@ -93,11 +108,24 @@ while not game_over:
         if event.type == pygame.QUIT:
             sys.exit()
         
+        if event.type == pygame.MOUSEMOTION:
+            pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, SQUARESIZE))
+            posx = event.pos[0]
+            if turn == 0:
+                pygame.draw.circle(screen, (255, 0, 0), (posx, int(SQUARESIZE/2)), RADIUS)
+            else:
+                pygame.draw.circle(screen, (255, 255, 0), (posx, int(SQUARESIZE/2)), RADIUS)
+        
+        pygame.display.update()
+        
         # Checking whether the type of event is a click in the pygame window
         if event.type == pygame.MOUSEBUTTONDOWN:
+            pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, SQUARESIZE))
+            
             #Ask for Player 1's Input
             if turn == 0:
-                col =  int(input("Player 1 make your selction (0 - 6)"))
+                posx = event.pos[0]
+                col = int(math.floor(posx / SQUARESIZE))
                 # 'col' represents the column where the player will drop the coin
                 
                 if is_valid_location(board, col):
@@ -105,12 +133,14 @@ while not game_over:
                     drop_piece(board, row, col, 1)
                     
                     if winning_move(board, 1):
-                        print("Player 1 wins !! CONGRATULATIONS")
+                        label = myfont.render("Player 1 wins !! CONGRATULATIONS", 1, (255, 0, 0))
+                        screen.blit(label, (40, 10))
                         game_over = True
                 
             #Ask for Player 2's Input
             else:
-                col =  int(input("Player 2 make your selction (0 - 6)"))
+                posx = event.pos[0]
+                col = int(math.floor(posx / SQUARESIZE))
                 # 'col' represents the column where the player will drop the coin
                 
                 if is_valid_location(board, col):
@@ -118,11 +148,16 @@ while not game_over:
                     drop_piece(board, row, col, 2)
                     
                     if winning_move(board, 2):
-                        print("Player 2 wins !! CONGRATULATIONS")
+                        label = myfont.render("Player 2 wins !! CONGRATULATIONS", 1, (255, 255, 0))
+                        screen.blit(label, (40, 10))
                         game_over = True
     
     
     
-    print_board(board)
-    turn += 1
-    turn = turn % 2
+            print_board(board)
+            draw_board(board)
+            turn += 1
+            turn = turn % 2
+            
+            if game_over:
+                pygame.time.wait(3000)
