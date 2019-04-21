@@ -108,6 +108,7 @@ while not game_over:
         if event.type == pygame.QUIT:
             sys.exit()
         
+        # Putting a coin in the empty buffer at the top while mouse is moving freely
         if event.type == pygame.MOUSEMOTION:
             pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, SQUARESIZE))
             posx = event.pos[0]

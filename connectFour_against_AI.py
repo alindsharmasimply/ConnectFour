@@ -78,7 +78,9 @@ def print_board(board):
 board = createBoard()
 print_board(board)
 game_over = False
-turn = 0
+
+# We want the first turn to be randomly allocated to either the player or the AI
+turn = random.randint(0, 1)
 
 pygame.init()
 
@@ -109,13 +111,13 @@ while not game_over:
         if event.type == pygame.QUIT:
             sys.exit()
         
+        # Putting a coin in the empty buffer at the top while mouse is moving freely
         if event.type == pygame.MOUSEMOTION:
             pygame.draw.rect(screen, (0, 0, 0), (0, 0, width, SQUARESIZE))
             posx = event.pos[0]
             if turn == 0:
                 pygame.draw.circle(screen, (255, 0, 0), (posx, int(SQUARESIZE/2)), RADIUS)
-            else:
-                pygame.draw.circle(screen, (255, 255, 0), (posx, int(SQUARESIZE/2)), RADIUS)
+            
         
         pygame.display.update()
         
