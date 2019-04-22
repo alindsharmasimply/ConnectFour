@@ -7,6 +7,9 @@ import random
 ROW_COUNT = 6
 COLUMN_COUNT = 7
 
+PLAYER_PIECE = 1
+AI_PIECE = 2
+
 def createBoard():
     board = np.zeros((6, 7))
     return board
@@ -14,9 +17,11 @@ def createBoard():
 def drop_piece(board, row, col, piece):
     board[row][col] = piece
 
+# Returns 'True' if a column is empty in the last row 
 def is_valid_location(board, col):
     return board[5][col] == 0
-    
+
+# Returns the topmost vacant row in the board
 def get_next_open_row(board, col):
     for r in range(ROW_COUNT):
         if board[r][col] == 0:
@@ -46,6 +51,46 @@ def winning_move(board, piece):
         for r in range(3, ROW_COUNT):
             if board[r][c] == piece and board[r - 1][c + 1] == piece and board[r - 2][c + 2] == piece and board[r - 3][c + 3] == piece:
                 return True
+
+def score_position(board, piece):
+    
+    # Score horizontally
+    score = 0
+    for r in range(ROW_COUNT): # For traversing through each row 1-by-1
+        row_array = [int(i) for i in list(board[r, :])] # Storing the whole row as a list in an array 1-by-1
+        for c in range(COLUMN_COUNT - 3): # Taking into consideration all possible columns in the above said row
+            window = row_array[c: c + 4] # Creating a window of 4 and sliding it 1-by-1
+            
+            if window.count(piece) == 4: # Winning arrangement
+                score += 100
+            elif window.count(piece) == 3 and window.count(0) == 1: # Any possible arrangement where there are atleast 3 similar pieces and 1 empty space
+                score += 10
+                
+    return score
+
+# To get all the empty columns
+def get_valid_locations(board):
+    
+    valid_locations = []
+    for col in range(COLUMN_COUNT):
+        if is_valid_location(board, col):
+            valid_locations.append(col)
+    return valid_locations # Returns a list of empty columns
+
+def pick_best_move(board, piece):
+    valid_locations = get_valid_locations(board)
+    best_score = 0
+    best_col = random.choice(valid_locations) # Randomly alloted just any column value
+    for col in valid_locations:
+        row = get_next_open_row(board, col)
+        temp_board = board.copy() # Since we are using 'numpy', hence we need to manually copy the board to another one
+        drop_piece(temp_board, row, col, piece) # This is to simulate the board and check in which column would it be best to drop the piece in the original board
+        score = score_position(temp_board, piece)
+        if score > best_score:
+            best_score = score
+            best_col = col # Would be used to drop the piece in the original board
+    
+    return best_col
 
 def draw_board(board):
     
@@ -148,7 +193,8 @@ while not game_over:
     #Ask for Player 2's Input which is the AI in this case
     if turn == 1 and not game_over:
         
-        col = random.randint(0, COLUMN_COUNT - 1)
+        # col = random.randint(0, COLUMN_COUNT - 1)
+        col = pick_best_move(board, AI_PIECE)
         # 'col' represents the column where the AI-player will drop the coin
         
         if is_valid_location(board, col):
@@ -162,9 +208,7 @@ while not game_over:
                 label = myfont.render("Player 2 wins !! CONGRATULATIONS", 1, (255, 255, 0))
                 screen.blit(label, (40, 10))
                 game_over = True
-    
-    
-    
+        
             print_board(board)
             draw_board(board)
             turn += 1
