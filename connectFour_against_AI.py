@@ -66,6 +66,38 @@ def score_position(board, piece):
             elif window.count(piece) == 3 and window.count(0) == 1: # Any possible arrangement where there are atleast 3 similar pieces and 1 empty space
                 score += 10
                 
+    # Score vertically
+    for c in range(COLUMN_COUNT):
+        col_array = [int(i) for i in list(board[:, c])]
+        for r in range(ROW_COUNT - 3):
+            window = col_array[r: r + 4]
+            
+            if window.count(piece) == 4:
+                score += 100
+            elif window.count(piece) == 3 and window.count(0) == 1:
+                score += 10
+                
+    # Score a positive sloped diagonal
+    for r in range(ROW_COUNT - 3):
+        for c in range(COLUMN_COUNT - 3):
+            window = [board[r + i][c + i] for i in range(4)]
+            
+            if window.count(piece) == 4:
+                score += 100
+            elif window.count(piece) == 3 and window.count(0) == 1:
+                score += 10
+                
+    # Score a negative sloped diagonal
+    for r in range(ROW_COUNT - 3):
+        for c in range(COLUMN_COUNT - 3):
+            window = [board[r + 3 - i][c + i] for i in range(4)]
+            
+            if window.count(piece) == 4:
+                score += 100
+            elif window.count(piece) == 3 and window.count(0) == 1:
+                score += 10
+    
+    
     return score
 
 # To get all the empty columns
@@ -107,11 +139,11 @@ def draw_board(board):
     
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            if board[r][c] == 1:
+            if board[r][c] == PLAYER_PIECE:
                 # To draw the red coin for player 1
                 pygame.draw.circle(screen, (255, 0, 0), (int(c * SQUARESIZE + SQUARESIZE/2),height - int(r * SQUARESIZE + SQUARESIZE/2)), RADIUS)
                 
-            elif board[r][c] == 2:
+            elif board[r][c] == AI_PIECE:
                 # To draw the yellow coin for player 2
                 pygame.draw.circle(screen, (255, 255, 0), (int(c * SQUARESIZE + SQUARESIZE/2),height - int(r * SQUARESIZE + SQUARESIZE/2)), RADIUS)
     
@@ -178,9 +210,9 @@ while not game_over:
                 
                 if is_valid_location(board, col):
                     row = get_next_open_row(board, col)
-                    drop_piece(board, row, col, 1)
+                    drop_piece(board, row, col, PLAYER_PIECE)
                     
-                    if winning_move(board, 1):
+                    if winning_move(board, PLAYER_PIECE):
                         label = myfont.render("Player 1 wins !! CONGRATULATIONS", 1, (255, 0, 0))
                         screen.blit(label, (40, 10))
                         game_over = True
@@ -202,9 +234,9 @@ while not game_over:
             #Adding a delay to the AI players move otherwise the user experience might not be that good
             pygame.time.wait(500)
             row = get_next_open_row(board, col)
-            drop_piece(board, row, col, 2)
+            drop_piece(board, row, col, AI_PIECE)
             
-            if winning_move(board, 2):
+            if winning_move(board, AI_PIECE):
                 label = myfont.render("Player 2 wins !! CONGRATULATIONS", 1, (255, 255, 0))
                 screen.blit(label, (40, 10))
                 game_over = True
