@@ -73,9 +73,14 @@ def evaluate_window(window, piece):
     return score
 
 def score_position(board, piece):
+    score = 0
+    
+    # Score the centre column
+    centre_array = [int(i) for i in list(board[:, 3])]
+    centre_count = centre_array.count(piece)
+    score += centre_count * 6
     
     # Score horizontally
-    score = 0
     for r in range(ROW_COUNT): # For traversing through each row 1-by-1
         row_array = [int(i) for i in list(board[r, :])] # Storing the whole row as a list in an array 1-by-1
         for c in range(COLUMN_COUNT - 3): # Taking into consideration all possible columns in the above said row
