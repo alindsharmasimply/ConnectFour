@@ -52,6 +52,26 @@ def winning_move(board, piece):
             if board[r][c] == piece and board[r - 1][c + 1] == piece and board[r - 2][c + 2] == piece and board[r - 3][c + 3] == piece:
                 return True
 
+def evaluate_window(window, piece):
+    score = 0
+    # To keep in check which player is playing currently
+    opponent_piece = PLAYER_PIECE
+    if piece == PLAYER_PIECE:
+        opponent_piece = AI_PIECE
+    
+    if window.count(piece) == 4: # Winning arrangement
+        score += 100
+    elif window.count(piece) == 3 and window.count(0) == 1: # Any possible arrangement where there are atleast 3 similar pieces and 1 empty space
+        score += 10
+    elif window.count(piece) == 2 and window.count(2) == 2:
+        score += 5
+    
+    # To block the opponent's pieces from connecting four
+    if window.count(opponent_piece) == 3 and window.count(0) == 1:
+        score -= 80
+        
+    return score
+
 def score_position(board, piece):
     
     # Score horizontally
@@ -61,10 +81,7 @@ def score_position(board, piece):
         for c in range(COLUMN_COUNT - 3): # Taking into consideration all possible columns in the above said row
             window = row_array[c: c + 4] # Creating a window of 4 and sliding it 1-by-1
             
-            if window.count(piece) == 4: # Winning arrangement
-                score += 100
-            elif window.count(piece) == 3 and window.count(0) == 1: # Any possible arrangement where there are atleast 3 similar pieces and 1 empty space
-                score += 10
+            score += evaluate_window(window, piece)
                 
     # Score vertically
     for c in range(COLUMN_COUNT):
@@ -72,30 +89,21 @@ def score_position(board, piece):
         for r in range(ROW_COUNT - 3):
             window = col_array[r: r + 4]
             
-            if window.count(piece) == 4:
-                score += 100
-            elif window.count(piece) == 3 and window.count(0) == 1:
-                score += 10
+            score += evaluate_window(window, piece)
                 
     # Score a positive sloped diagonal
     for r in range(ROW_COUNT - 3):
         for c in range(COLUMN_COUNT - 3):
             window = [board[r + i][c + i] for i in range(4)]
             
-            if window.count(piece) == 4:
-                score += 100
-            elif window.count(piece) == 3 and window.count(0) == 1:
-                score += 10
+            score += evaluate_window(window, piece)
                 
     # Score a negative sloped diagonal
     for r in range(ROW_COUNT - 3):
         for c in range(COLUMN_COUNT - 3):
             window = [board[r + 3 - i][c + i] for i in range(4)]
             
-            if window.count(piece) == 4:
-                score += 100
-            elif window.count(piece) == 3 and window.count(0) == 1:
-                score += 10
+            score += evaluate_window(window, piece)
     
     
     return score
@@ -111,7 +119,7 @@ def get_valid_locations(board):
 
 def pick_best_move(board, piece):
     valid_locations = get_valid_locations(board)
-    best_score = 0
+    best_score = -10000
     best_col = random.choice(valid_locations) # Randomly alloted just any column value
     for col in valid_locations:
         row = get_next_open_row(board, col)
