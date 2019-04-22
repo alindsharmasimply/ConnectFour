@@ -13,9 +13,11 @@ def createBoard():
 def drop_piece(board, row, col, piece):
     board[row][col] = piece
 
+# Returns 'True' if a column is empty in the last row
 def is_valid_location(board, col):
     return board[5][col] == 0
-    
+
+# Returns the topmost vacant row in the board
 def get_next_open_row(board, col):
     for r in range(ROW_COUNT):
         if board[r][col] == 0:
