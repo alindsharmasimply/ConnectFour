@@ -113,6 +113,55 @@ def score_position(board, piece):
     
     return score
 
+# Check for a terminal node
+def is_terminal_node(board):
+    return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
+
+# Implementation of minimax algorithm
+def minimax(board, depth, maximizingPlayer):
+    valid_locations = get_valid_locations(board)
+    is_terminal = is_terminal_node(board)
+    if depth == 0 or is_terminal:
+        if is_terminal:
+            if winning_move(board, AI_PIECE):
+                return (None, 10000000000000)
+            elif winning_move(board, PLAYER_PIECE):
+                return (None, -10000000000000)
+            else: # Game is over, no more valid moves
+                return (None, 0)
+    
+        else: # Depth is zero
+            return (None, score_position(board, AI_PIECE))
+        
+    if maximizingPlayer: # The maximizing player is the AI_PIECE
+        value = -math.inf
+        column = random.choice(valid_locations)
+        for col in valid_locations:
+            row = get_next_open_row(board, col)
+            b_copy = board.copy()
+            drop_piece(b_copy, row, col, AI_PIECE)
+            
+            # Now we need to get the best score as well as the column that produces it
+            new_score = minimax(b_copy, depth - 1, False)[1] # We input FALSE because we want the PLAYER_PIECE to be next
+            if new_score > value:
+                value = new_score
+                column = col
+        return column, value
+            
+    else: # Minimizing player is the PLAYER_PIECE
+        value = math.inf
+        column = random.choice(valid_locations)
+        for col in valid_locations:
+            row = get_next_open_row(board, col)
+            b_copy = board.copy()
+            drop_piece(b_copy, row, col, PLAYER_PIECE)
+            
+            new_score = minimax(b_copy, depth - 1, True)[1] # We input TRUE because we want the AI_PIECE to be next
+            if new_score < value:
+                value = new_score
+                column = col
+        return column, value
+
 # To get all the empty columns
 def get_valid_locations(board):
     
@@ -120,7 +169,7 @@ def get_valid_locations(board):
     for col in range(COLUMN_COUNT):
         if is_valid_location(board, col):
             valid_locations.append(col)
-    return valid_locations # Returns a list of empty columns
+    return valid_locations # Returns a list of columns that are empty/available
 
 def pick_best_move(board, piece):
     valid_locations = get_valid_locations(board)
@@ -239,7 +288,10 @@ while not game_over:
     if turn == 1 and not game_over:
         
         # col = random.randint(0, COLUMN_COUNT - 1)
-        col = pick_best_move(board, AI_PIECE)
+        # col = pick_best_move(board, AI_PIECE)
+        col, minimax_score = minimax(board, 3, True) # The middle parameter i.e., depth decides the difficulty level
+        # Greater the depth, more difficult the game
+        
         # 'col' represents the column where the AI-player will drop the coin
         
         if is_valid_location(board, col):
